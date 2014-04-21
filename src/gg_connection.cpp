@@ -9,6 +9,7 @@ gg_connection::gg_connection(boost::asio::io_service & io_service)
 
 void gg_connection::start()
 {
+	std::cout << "New connection" << std::endl;
 	// Send GG_WELCOME to client and wait for packets AFTER seed was delivered.
 	send_gg_welcome();
 }
@@ -41,7 +42,7 @@ void gg_connection::handle_read_gg_event(const boost::system::error_code & error
 {
 	if (!error)
 	{
-		std::cout << "Received gg event" << std::endl;
+		std::cout << "Received gg event: " << gg_header_.type << std::endl;
 		begin_read_gg_header();
 	}
 }
