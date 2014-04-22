@@ -15,6 +15,7 @@ class database
 public:
 	static boost::asio::io_service::id id;
 	database(boost::asio::io_service & io_service);
+	~database();
 	void shutdown_service();
 	/**
 	 * Open database file at file

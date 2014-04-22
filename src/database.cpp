@@ -20,6 +20,11 @@ database::database(boost::asio::io_service & io_service)
 {
 }
 
+database::~database()
+{
+	::sqlite3_close(db_);
+}
+
 void database::shutdown_service()
 {
 }
