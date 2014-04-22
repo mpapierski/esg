@@ -93,6 +93,15 @@ void gg_connection::handle_gg_login80(struct gg_login80 * event)
 	case GG_LOGIN_HASH_GG32:
 		break;
 	case GG_LOGIN_HASH_SHA1:
+		DBUG("seed = %d uin = %d", seed_, event->uin);
+		bool found;
+		database_.execute_query("SELECT uin, gg_login_hash_sha1(password, %d) FROM users WHERE uin = %d",
+			[&](int argc, char ** rows, char ** cols) -> int
+			{
+				found = std::memcmp(rows[1], event->hash, 20) == 0;
+				return 0;
+			}, seed_, event->uin);
+		DBUG("Found: %d", found);
 		break;
 	default:
 		break;
