@@ -6,12 +6,12 @@ set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 find_package (Boost REQUIRED COMPONENTS
 	system)
 find_package (Libgadu REQUIRED)
-find_package (Sqlite3 REQUIRED)
+add_subdirectory (deps EXCLUDE_FROM_ALL)
 include_directories (
 	include/
+	deps/sqlite3/
 	${Boost_INCLUDE_DIRS}
-	${LIBGADU_INCLUDE_DIR}
-	${SQLITE3_INCLUDE_DIR})
+	${LIBGADU_INCLUDE_DIR})
 add_definitions (${LIBGADU_DEFINITIONS})
 add_executable (ggd
 	src/gg_server.cpp
@@ -19,6 +19,6 @@ add_executable (ggd
 	src/main.cpp
 	src/database.cpp)
 target_link_libraries (ggd
+	sqlite3
 	${Boost_LIBRARIES}
-	${LIBGADU_LIBRARIES}
-	${SQLITE3_LIBRARIES})
+	${LIBGADU_LIBRARIES})
