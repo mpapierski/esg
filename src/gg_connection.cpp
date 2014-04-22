@@ -88,22 +88,46 @@ void gg_connection::handle_write_gg_welcome(const boost::system::error_code & er
 
 void gg_connection::handle_gg_login80(struct gg_login80 * event)
 {
+	bool found;
+	std::string function_name;
 	switch (event->hash_type)
 	{
 	case GG_LOGIN_HASH_GG32:
-		break;
-	case GG_LOGIN_HASH_SHA1:
-		DBUG("seed = %d uin = %d", seed_, event->uin);
-		bool found;
-		database_.execute_query("SELECT uin, gg_login_hash_sha1(password, %d) FROM users WHERE uin = %d",
+	{
+		// XXX: This is my guess how to handle old hashing method
+		unsigned int * hash = reinterpret_cast<unsigned int *>(event->hash);
+		database_.execute_query(
+			"SELECT EXISTS("
+				"SELECT 1 "
+				"FROM users "
+				"WHERE uin = %d "
+				"AND gg_login_hash(password, %d) = %d)",
 			[&](int argc, char ** rows, char ** cols) -> int
 			{
+				assert(argc == 1);
+				found = boost::lexical_cast<bool>(rows[0]);
+				return 0;
+			}, event->uin, seed_, *hash);
+		break;
+	}
+	case GG_LOGIN_HASH_SHA1:
+		database_.execute_query(
+			"SELECT uin, gg_login_hash_sha1(password, %d) FROM users WHERE uin = %d",
+			[&](int argc, char ** rows, char ** cols) -> int
+			{
+				assert(boost::lexical_cast<int>(rows[0]) == event->uin);
 				found = std::memcmp(rows[1], event->hash, 20) == 0;
 				return 0;
 			}, seed_, event->uin);
-		DBUG("Found: %d", found);
 		break;
 	default:
-		break;
+		ERR("Unknown login hash method: 0x%04X", event->hash_type);
+		return;
 	}
+	if (!found)
+	{
+		ERR("Unable to find user for uin: %d (Seed: %d)", event->uin, seed_);
+		return;
+	}
+	INFO("User logged in: %d (Seed: %d)", event->uin, seed_);
 }
