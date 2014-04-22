@@ -4,6 +4,7 @@ gg_connection::gg_connection(boost::asio::io_service & io_service)
 	: io_service_(io_service)
 	, database_(boost::asio::use_service<database>(io_service_))
 	, socket_(io_service_)
+	, uin_(-1)
 {
 }
 
@@ -29,6 +30,11 @@ void gg_connection::handle_read_gg_header(const boost::system::error_code & erro
 {
 	if (!error)
 	{
+		if (gg_header_.length == 0)
+		{
+			handle_read_gg_event(error, 0);
+			return;
+		}
 		gg_event_.resize(gg_header_.length);
 		boost::asio::async_read(socket_, boost::asio::buffer(gg_event_),
 			boost::bind(&gg_connection::handle_read_gg_event, shared_from_this(),
@@ -42,13 +48,18 @@ void gg_connection::handle_read_gg_event(const boost::system::error_code & error
 {
 	if (!error)
 	{
-		DBUG("Received gg event: %d", gg_header_.type);
 		switch (gg_header_.type)
 		{
 		case GG_LOGIN80:
-			struct gg_login80 * event =
-				reinterpret_cast<struct gg_login80 *>(gg_event_.data());
-			handle_gg_login80(event);
+			handle_gg_login80(
+				reinterpret_cast<struct gg_login80 *>(gg_event_.data()));
+			break;
+		case GG_LIST_EMPTY:
+			handle_gg_list_empty();
+			break;
+		default:
+			WARN("Received unkown gg event: 0x%04X (%d)", gg_header_.type, gg_header_.type);
+			begin_read_gg_header();
 			break;
 		}
 	}
@@ -188,6 +199,14 @@ void gg_connection::handle_gg_login80(struct gg_login80 * event)
 		send_gg_login80_failed();
 		return;
 	}
+	uin_ = event->uin;
 	INFO("User logged in: %d (Seed: %d)", event->uin, seed_);
 	send_gg_login80_ok();
+}
+
+void gg_connection::handle_gg_list_empty()
+{
+	assert(uin_ != -1);
+	INFO("User %d has empty contact list", uin_);
+	begin_read_gg_header();
 }

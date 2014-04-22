@@ -48,6 +48,7 @@ public:
 		std::size_t bytes_transferred);
 	/// Packets
 	void handle_gg_login80(struct gg_login80 * event);
+	void handle_gg_list_empty();
 private:
 	gg_connection(boost::asio::io_service & io_service);
 	boost::asio::io_service & io_service_;
@@ -56,6 +57,7 @@ private:
 	struct gg_header gg_header_;
 	std::vector<char> gg_event_;
 	int seed_;
+	unsigned int uin_;
 	boost::asio::streambuf write_buffer_;
 };
 
