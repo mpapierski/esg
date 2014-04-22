@@ -34,6 +34,18 @@ public:
 	void send_gg_welcome();
 	void handle_write_gg_welcome(const boost::system::error_code & error,
 		std::size_t bytes_transferred);
+	/**
+	 * Send gg_login80_ok
+	 */
+	void send_gg_login80_ok(int unk = 0x01);
+	void handle_write_gg_login80_ok(const boost::system::error_code & error,
+		std::size_t bytes_transferred);
+	/**
+	 * Send gg_login80_failed
+	 */
+	void send_gg_login80_failed(int unk = 0x01);
+	void handle_write_gg_login80_failed(const boost::system::error_code & error,
+		std::size_t bytes_transferred);
 	/// Packets
 	void handle_gg_login80(struct gg_login80 * event);
 private:

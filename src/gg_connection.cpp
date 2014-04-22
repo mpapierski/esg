@@ -51,7 +51,6 @@ void gg_connection::handle_read_gg_event(const boost::system::error_code & error
 			handle_gg_login80(event);
 			break;
 		}
-		begin_read_gg_header();
 	}
 }
 
@@ -82,6 +81,64 @@ void gg_connection::handle_write_gg_welcome(const boost::system::error_code & er
 	if (!error)
 	{
 		write_buffer_.consume(bytes_transferred);
+		begin_read_gg_header();
+	}
+}
+
+void gg_connection::send_gg_login80_ok(int unk)
+{
+	boost::asio::streambuf::mutable_buffers_type bufs =
+		write_buffer_.prepare(sizeof(struct gg_header) + sizeof(struct gg_login80_ok));
+	
+	struct gg_header * header = boost::asio::buffer_cast<struct gg_header *>(bufs);
+	header->type = GG_LOGIN80_OK;
+	header->length = sizeof(struct gg_login80_ok);
+
+	struct gg_login80_ok * ok = boost::asio::buffer_cast<struct gg_login80_ok *>(bufs + sizeof(struct gg_header));
+	ok->unknown1 = unk;
+		
+	boost::asio::async_write(socket_, bufs,
+		boost::bind(&gg_connection::handle_write_gg_login80_ok, shared_from_this(),
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
+}
+
+void gg_connection::handle_write_gg_login80_ok(const boost::system::error_code & error,
+	std::size_t bytes_transferred)
+{
+	if (!error)
+	{
+		write_buffer_.consume(bytes_transferred);
+		INFO("GG_LOGIN80_OK packet is delivered");
+		begin_read_gg_header();
+	}
+}
+
+void gg_connection::send_gg_login80_failed(int unk)
+{
+	boost::asio::streambuf::mutable_buffers_type bufs =
+		write_buffer_.prepare(sizeof(struct gg_header) + sizeof(struct gg_login80_failed));
+	
+	struct gg_header * header = boost::asio::buffer_cast<struct gg_header *>(bufs);
+	header->type = GG_LOGIN80_FAILED;
+	header->length = sizeof(struct gg_login80_failed);
+
+	struct gg_login80_failed * failed = boost::asio::buffer_cast<struct gg_login80_failed *>(bufs + sizeof(struct gg_header));
+	failed->unknown1 = unk;
+		
+	boost::asio::async_write(socket_, bufs,
+		boost::bind(&gg_connection::handle_write_gg_login80_failed, shared_from_this(),
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
+}
+
+void gg_connection::handle_write_gg_login80_failed(const boost::system::error_code & error,
+	std::size_t bytes_transferred)
+{
+	if (!error)
+	{
+		write_buffer_.consume(bytes_transferred);
+		INFO("GG_LOGIN80_FAILED packet is delivered");
 		begin_read_gg_header();
 	}
 }
@@ -122,12 +179,15 @@ void gg_connection::handle_gg_login80(struct gg_login80 * event)
 		break;
 	default:
 		ERR("Unknown login hash method: 0x%04X", event->hash_type);
+		send_gg_login80_failed();
 		return;
 	}
 	if (!found)
 	{
 		ERR("Unable to find user for uin: %d (Seed: %d)", event->uin, seed_);
+		send_gg_login80_failed();
 		return;
 	}
 	INFO("User logged in: %d (Seed: %d)", event->uin, seed_);
+	send_gg_login80_ok();
 }
