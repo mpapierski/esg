@@ -8,6 +8,8 @@
 #include <boost/make_shared.hpp>
 #include <boost/bind.hpp>
 #include "libgadu.h"
+// This header is taken from libgadu/include/protocol.h
+#include "gg_protocol.h"
 
 class gg_connection
 	: public boost::enable_shared_from_this<gg_connection>
@@ -31,6 +33,8 @@ public:
 	void send_gg_welcome();
 	void handle_write_gg_welcome(const boost::system::error_code & error,
 		std::size_t bytes_transferred);
+	/// Packets
+	void handle_gg_login80(struct gg_login80 * event);
 private:
 	gg_connection(boost::asio::io_service & io_service);
 	boost::asio::io_service & io_service_;

@@ -43,6 +43,14 @@ void gg_connection::handle_read_gg_event(const boost::system::error_code & error
 	if (!error)
 	{
 		std::cout << "Received gg event: " << gg_header_.type << std::endl;
+		switch (gg_header_.type)
+		{
+		case GG_LOGIN80:
+			struct gg_login80 * event =
+				reinterpret_cast<struct gg_login80 *>(gg_event_.data());
+			handle_gg_login80(event);
+			break;
+		}
 		begin_read_gg_header();
 	}
 }
@@ -76,5 +84,20 @@ void gg_connection::handle_write_gg_welcome(const boost::system::error_code & er
 		write_buffer_.consume(bytes_transferred);
 		std::cout << "Success " << bytes_transferred << std::endl;
 		begin_read_gg_header();
+	}
+}
+
+void gg_connection::handle_gg_login80(struct gg_login80 * event)
+{
+	switch (event->hash_type)
+	{
+	case GG_LOGIN_HASH_GG32:
+		std::cout << "GG_LOGIN_HASH_GG32" << std::endl;
+		break;
+	case GG_LOGIN_HASH_SHA1:
+		std::cout << "GG_LOGIN_HASH_SHA1" << std::endl;
+		break;
+	default:
+		break;
 	}
 }
