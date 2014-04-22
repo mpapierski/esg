@@ -61,6 +61,10 @@ void gg_connection::handle_read_gg_event(const boost::system::error_code & error
 			handle_gg_new_status80(
 				reinterpret_cast<struct gg_new_status80 *>(gg_event_.data()));
 			break;
+		case GG_SEND_MSG80:
+			handle_send_msg80(
+				reinterpret_cast<struct gg_send_msg80 *>(gg_event_.data()));
+			break;
 		default:
 			WARN("Received unkown gg event: 0x%04X (%d)", gg_header_.type, gg_header_.type);
 			begin_read_gg_header();
@@ -220,4 +224,10 @@ void gg_connection::handle_gg_new_status80(struct gg_new_status80 * event)
 	assert(uin_ != -1);
 	INFO("User %d changed status to 0x%04X (flags: 0x%04X)", uin_, event->status, event->flags);
 	begin_read_gg_header();
+}
+
+void gg_connection::handle_send_msg80(struct gg_send_msg80 * event)
+{
+	char * plain_message = reinterpret_cast<char *>(event) + event->offset_plain;
+	DBUG("New message (class: 0x%04X) %d->%d: %s", uin_, event->msgclass, event->recipient, plain_message);
 }

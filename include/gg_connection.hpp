@@ -50,6 +50,7 @@ public:
 	void handle_gg_login80(struct gg_login80 * event);
 	void handle_gg_list_empty();
 	void handle_gg_new_status80(struct gg_new_status80 * event);
+	void handle_send_msg80(struct gg_send_msg80 * event);
 private:
 	gg_connection(boost::asio::io_service & io_service);
 	boost::asio::io_service & io_service_;
