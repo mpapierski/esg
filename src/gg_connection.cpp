@@ -5,12 +5,11 @@ gg_connection::gg_connection(boost::asio::io_service & io_service)
 	, database_(boost::asio::use_service<database>(io_service_))
 	, socket_(io_service_)
 {
-	std::cout << "answer=" << database_.is_open() << std::endl;
 }
 
 void gg_connection::start()
 {
-	std::cout << "New connection" << std::endl;
+	INFO("New connection");
 	// Send GG_WELCOME to client and wait for packets AFTER seed was delivered.
 	send_gg_welcome();
 }
@@ -43,7 +42,7 @@ void gg_connection::handle_read_gg_event(const boost::system::error_code & error
 {
 	if (!error)
 	{
-		std::cout << "Received gg event: " << gg_header_.type << std::endl;
+		DBUG("Received gg event: %d", gg_header_.type);
 		switch (gg_header_.type)
 		{
 		case GG_LOGIN80:
@@ -83,7 +82,6 @@ void gg_connection::handle_write_gg_welcome(const boost::system::error_code & er
 	if (!error)
 	{
 		write_buffer_.consume(bytes_transferred);
-		std::cout << "Success " << bytes_transferred << std::endl;
 		begin_read_gg_header();
 	}
 }
@@ -93,10 +91,8 @@ void gg_connection::handle_gg_login80(struct gg_login80 * event)
 	switch (event->hash_type)
 	{
 	case GG_LOGIN_HASH_GG32:
-		std::cout << "GG_LOGIN_HASH_GG32" << std::endl;
 		break;
 	case GG_LOGIN_HASH_SHA1:
-		std::cout << "GG_LOGIN_HASH_SHA1" << std::endl;
 		break;
 	default:
 		break;

@@ -1,10 +1,12 @@
 #include <iostream>
 #include "gg_server.hpp"
 #include "database.hpp"
+#include "logging.hpp"
 
 int
 main(int argc, char * argv[])
 {
+	INFO("Eksperymentaly Serwer Gadu-Gadu");
 	boost::asio::io_service io_service;
 	// Create database service
 	database * db_svc = new database(io_service);
@@ -14,7 +16,7 @@ main(int argc, char * argv[])
 		db_svc->open("db.sqlite");
 	} catch (std::exception & e)
 	{
-		std::cerr << e.what() << std::endl;
+		ERR("%s", e.what());
 		return 1;
 	}
 	// GG protocol listener

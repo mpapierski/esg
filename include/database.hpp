@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <sqlite3.h>
+#include "logging.hpp"
 
 class database
 	: public boost::asio::io_service::service
