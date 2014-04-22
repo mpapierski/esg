@@ -6,6 +6,7 @@
 #include <boost/array.hpp>
 #include <boost/lexical_cast.hpp>
 #include "sqlite3.h"
+#include "libgadu.h"
 #include "logging.hpp"
 
 class database
@@ -32,6 +33,14 @@ public:
 	void execute_query(const std::string & query, Callback callback, Args... args);
 private:
 	struct sqlite3 * db_;
+	// Install custom database functions
+	void create_functions();
+	void func_gg_login_hash_sha1(sqlite3_context* ctx, int argc, sqlite3_value** argv);
+	void func_gg_login_hash(sqlite3_context* ctx, int argc, sqlite3_value** argv);
+	/**
+	 * SQLite wrapper for "gg_login_hash_sha1" function.
+	 */
+	//void func_gg_login_hash_sha1(sqlite_func* fn, int, const char**);
 	/// Migrations
 	typedef void (database::*migration_function_type)();
 	// Execute all migrations stored in `migrations_` array.
