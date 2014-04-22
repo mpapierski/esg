@@ -2,9 +2,10 @@
 
 gg_connection::gg_connection(boost::asio::io_service & io_service)
 	: io_service_(io_service)
+	, database_(boost::asio::use_service<database>(io_service_))
 	, socket_(io_service_)
 {
-
+	std::cout << "answer=" << database_.is_open() << std::endl;
 }
 
 void gg_connection::start()
