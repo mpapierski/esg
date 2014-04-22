@@ -57,6 +57,10 @@ void gg_connection::handle_read_gg_event(const boost::system::error_code & error
 		case GG_LIST_EMPTY:
 			handle_gg_list_empty();
 			break;
+		case GG_NEW_STATUS80:
+			handle_gg_new_status80(
+				reinterpret_cast<struct gg_new_status80 *>(gg_event_.data()));
+			break;
 		default:
 			WARN("Received unkown gg event: 0x%04X (%d)", gg_header_.type, gg_header_.type);
 			begin_read_gg_header();
@@ -208,5 +212,12 @@ void gg_connection::handle_gg_list_empty()
 {
 	assert(uin_ != -1);
 	INFO("User %d has empty contact list", uin_);
+	begin_read_gg_header();
+}
+
+void gg_connection::handle_gg_new_status80(struct gg_new_status80 * event)
+{
+	assert(uin_ != -1);
+	INFO("User %d changed status to 0x%04X (flags: 0x%04X)", uin_, event->status, event->flags);
 	begin_read_gg_header();
 }
