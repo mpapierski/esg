@@ -4,7 +4,7 @@
 #define LOG_MESSAGE_AUX(level, format, ...) \
 	do \
 	{ \
-		std::fprintf(stdout, "[%d] %s: " format, ::getpid(), level, ## __VA_ARGS__); \
+		std::fprintf(stdout, "[%d] %s: " format "\n", ::getpid(), level, ## __VA_ARGS__); \
 	} while (0)
 
 #define DBUG(format, ...) LOG_MESSAGE_AUX("debug", format, ## __VA_ARGS__)
