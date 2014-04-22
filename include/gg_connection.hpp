@@ -11,6 +11,7 @@
 // This header is taken from libgadu/include/protocol.h
 #include "gg_protocol.h"
 #include "database.hpp"
+#include "connection_manager.hpp"
 
 class gg_connection
 	: public boost::enable_shared_from_this<gg_connection>
@@ -55,6 +56,7 @@ private:
 	gg_connection(boost::asio::io_service & io_service);
 	boost::asio::io_service & io_service_;
 	database & database_;
+	connection_manager & manager_;
 	boost::asio::ip::tcp::socket socket_;
 	struct gg_header gg_header_;
 	std::vector<char> gg_event_;

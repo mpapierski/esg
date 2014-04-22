@@ -17,7 +17,8 @@ add_executable (ggd
 	src/gg_server.cpp
 	src/gg_connection.cpp
 	src/main.cpp
-	src/database.cpp)
+	src/database.cpp
+	src/connection_manager.cpp)
 target_link_libraries (ggd
 	sqlite3
 	${Boost_LIBRARIES}

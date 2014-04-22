@@ -3,6 +3,7 @@
 gg_server::gg_server(boost::asio::io_service & io_service)
 	: io_service_(io_service)
 	, acceptor_(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8074))
+	, manager_(boost::asio::use_service<connection_manager>(io_service_))
 {
 	start_accept();
 }
@@ -22,7 +23,7 @@ void gg_server::handle_accept(const boost::system::error_code & error,
 {
 	if (!error)
 	{
-		new_connection->start();
+		manager_.start(new_connection);
 		start_accept();
 	}
 }
